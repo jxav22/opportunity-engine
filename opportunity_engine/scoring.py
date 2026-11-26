@@ -44,7 +44,9 @@ REMOTE_OK = re.compile(r"\b(remote|work from (home|anywhere)|distributed)\b", re
 STALE_DAYS_DEFAULT = 45
 
 GENERIC_LOW_VALUE = re.compile(
-    r"\b(content moderator|data entry|call centre|call center|commission[- ]only sales)\b",
+    r"\b(content moderator|content creator|data entry|call centre|call center|"
+    r"customer service|customer support|commission[- ]only sales|"
+    r"virtual assistant|data label(?:l)?er)\b",
     re.I,
 )
 DUBIOUS = re.compile(
