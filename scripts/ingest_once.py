@@ -70,6 +70,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Exit non-zero on first source error",
     )
+    parser.add_argument(
+        "--rescore",
+        action="store_true",
+        help="Run rescore_all() after ingest (skills/signals/actions)",
+    )
     args = parser.parse_args(argv)
 
     db_path = Path(args.db)
@@ -116,6 +121,12 @@ def main(argv: list[str] | None = None) -> int:
     live_count = conn.execute(
         "SELECT COUNT(*) AS c FROM opportunities WHERE is_demo = 0"
     ).fetchone()["c"]
+    rescore_summary = None
+    if args.rescore and ok > 0:
+        from opportunity_engine.scoring import rescore_all
+
+        rescore_summary = rescore_all(conn)
+        logger.info("rescore_all → %s", rescore_summary)
     print(
         json.dumps(
             {
@@ -125,6 +136,7 @@ def main(argv: list[str] | None = None) -> int:
                 "items_seen": total_seen,
                 "items_new": total_new,
                 "live_opportunities": live_count,
+                "rescore": rescore_summary,
                 "results": results,
             },
             indent=2,

@@ -147,6 +147,16 @@ def test_dubious_and_upfront_cost_penalties():
     assert "high_upfront_cost" in codes
 
 
+def test_generic_customer_service_penalty():
+    opp = {
+        **SAMPLE_OPP,
+        "title": "Customer Service Representative",
+        "description": "Remote customer support role. Competitive salary.",
+    }
+    penalties = detect_penalties(opp, DEFAULT_PROFILE)
+    assert any(p["code"] == "generic_low_value" for p in penalties)
+
+
 def test_null_dimension_when_no_evidence():
     opp = {
         "id": "thin",
