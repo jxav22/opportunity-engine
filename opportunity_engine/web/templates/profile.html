@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Profile · Opportunity Engine{% endblock %}
+{% block content %}
+  <h1>Profile</h1>
+  <p class="lede">Editable JSON document. Persists to SQLite <code>profile</code> and <code>data/profile.json</code>.</p>
+
+  {% if saved %}
+  <div class="flash">Profile saved.</div>
+  {% endif %}
+  {% if error %}
+  <div class="flash error">{{ error }}</div>
+  {% endif %}
+
+  <form method="post" action="/profile" class="panel">
+    <label class="muted" for="profile_json">Profile JSON</label>
+    <textarea id="profile_json" name="profile_json" required>{{ profile_json }}</textarea>
+    <div style="margin-top:0.75rem">
+      <button type="submit">Save profile</button>
+    </div>
+  </form>
+{% endblock %}

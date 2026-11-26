@@ -1,7 +1,6 @@
 """SQLite schema + upsert helpers matching shared contracts.
 
-Bootstrap aligned with Agent A's ingest helpers. Agent B may replace
-this module — keep schema column names and helper signatures stable.
+Canonical persistence (Agent B). Keeps Agent A ingest + Agent C ranking helper signatures.
 """
 
 from __future__ import annotations
@@ -139,6 +138,11 @@ CREATE TABLE IF NOT EXISTS ingest_runs (
 CREATE INDEX IF NOT EXISTS idx_opportunities_source ON opportunities(source_id);
 CREATE INDEX IF NOT EXISTS idx_opportunities_company ON opportunities(company_id);
 CREATE INDEX IF NOT EXISTS idx_opportunities_stale ON opportunities(stale);
+CREATE INDEX IF NOT EXISTS idx_opportunities_demo ON opportunities(is_demo);
+CREATE INDEX IF NOT EXISTS idx_opportunities_saved ON opportunities(saved);
+CREATE INDEX IF NOT EXISTS idx_opportunities_category ON opportunities(category);
+CREATE INDEX IF NOT EXISTS idx_companies_status ON companies(monitoring_status);
+CREATE INDEX IF NOT EXISTS idx_skill_mentions_skill ON skill_mentions(skill);
 """
 
 
@@ -225,10 +229,26 @@ def upsert_opportunity(
     """Insert or refresh an opportunity. Returns (id, is_new)."""
     now = utc_now()
     existing = conn.execute(
-        "SELECT id, discovered_at FROM opportunities WHERE dedupe_key = ?",
+        "SELECT id, discovered_at, raw_json FROM opportunities WHERE dedupe_key = ?",
         (dedupe_key,),
     ).fetchone()
-    raw_json = json.dumps(raw, ensure_ascii=False, default=str) if raw is not None else None
+    # Merge provenance across sources when the same dedupe_key is seen again.
+    if existing and raw is not None:
+        try:
+            prev = json.loads(existing["raw_json"]) if existing["raw_json"] else {}
+        except (TypeError, json.JSONDecodeError, KeyError):
+            prev = {"_previous_raw": existing["raw_json"] if "raw_json" in existing.keys() else None}
+        sources = prev.get("_sources") if isinstance(prev, dict) else None
+        if not isinstance(sources, list):
+            sources = [{"seen_at": utc_now(), "payload": prev}] if prev else []
+        sources.append({"seen_at": utc_now(), "payload": raw, "source_id": source_id})
+        raw_json = json.dumps(
+            {"latest": raw, "_sources": sources[-20:], "merged_at": utc_now()},
+            ensure_ascii=False,
+            default=str,
+        )
+    else:
+        raw_json = json.dumps(raw, ensure_ascii=False, default=str) if raw is not None else None
     if existing:
         conn.execute(
             """
@@ -393,3 +413,210 @@ def finish_ingest_run(
             "UPDATE sources SET last_error = ? WHERE id = ?",
             (error, source_id),
         )
+
+# --- Agent B company / watchlist / query helpers (signatures additive) ---
+
+def upsert_company(
+    conn: sqlite3.Connection,
+    *,
+    id: str | None = None,
+    name: str,
+    website: str | None = None,
+    location: str | None = None,
+    industry: str | None = None,
+    product_description: str | None = None,
+    engineering_stack_json: str | list | None = None,
+    company_size: str | None = None,
+    funding_stage: str | None = None,
+    remote_policy: str | None = None,
+    accessibility_notes: str | None = None,
+    why_interesting: str | None = None,
+    source_links_json: str | list | dict | None = None,
+    last_verified_at: str | None = None,
+    interest_level: int = 0,
+    monitoring_status: str = "watching",
+    notes: str | None = None,
+    data_quality: str = "partial",
+) -> str:
+    """Full company upsert. Unknown facts stay NULL — never fabricate."""
+    company_id = id or slugify(name)
+    now = utc_now()
+    if isinstance(engineering_stack_json, (list, dict)):
+        engineering_stack_json = json.dumps(engineering_stack_json)
+    if isinstance(source_links_json, (list, dict)):
+        source_links_json = json.dumps(source_links_json)
+
+    existing = conn.execute("SELECT * FROM companies WHERE id = ?", (company_id,)).fetchone()
+    if existing:
+        def keep(new, old_key):
+            return new if new is not None else existing[old_key]
+        conn.execute(
+            """
+            UPDATE companies SET
+                name=?, website=?, location=?, industry=?, product_description=?,
+                engineering_stack_json=?, company_size=?, funding_stage=?, remote_policy=?,
+                accessibility_notes=?, why_interesting=?, source_links_json=?,
+                last_verified_at=?, interest_level=?, monitoring_status=?, notes=?,
+                data_quality=?, updated_at=?
+            WHERE id=?
+            """,
+            (
+                name,
+                keep(website, "website"),
+                keep(location, "location"),
+                keep(industry, "industry"),
+                keep(product_description, "product_description"),
+                keep(engineering_stack_json, "engineering_stack_json"),
+                keep(company_size, "company_size"),
+                keep(funding_stage, "funding_stage"),
+                keep(remote_policy, "remote_policy"),
+                keep(accessibility_notes, "accessibility_notes"),
+                keep(why_interesting, "why_interesting"),
+                keep(source_links_json, "source_links_json"),
+                keep(last_verified_at, "last_verified_at"),
+                interest_level,
+                monitoring_status,
+                keep(notes, "notes"),
+                data_quality,
+                now,
+                company_id,
+            ),
+        )
+    else:
+        conn.execute(
+            """
+            INSERT INTO companies (
+                id, name, website, location, industry, product_description,
+                engineering_stack_json, company_size, funding_stage, remote_policy,
+                accessibility_notes, why_interesting, source_links_json,
+                last_verified_at, interest_level, monitoring_status, notes,
+                created_at, updated_at, data_quality
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                company_id, name, website, location, industry, product_description,
+                engineering_stack_json, company_size, funding_stage, remote_policy,
+                accessibility_notes, why_interesting, source_links_json,
+                last_verified_at, interest_level, monitoring_status, notes,
+                now, now, data_quality,
+            ),
+        )
+    return company_id
+
+
+def update_company_notes(
+    conn: sqlite3.Connection,
+    company_id: str,
+    *,
+    notes: str | None = None,
+    interest_level: int | None = None,
+    monitoring_status: str | None = None,
+) -> bool:
+    row = conn.execute("SELECT * FROM companies WHERE id = ?", (company_id,)).fetchone()
+    if not row:
+        return False
+    conn.execute(
+        """
+        UPDATE companies SET notes=?, interest_level=?, monitoring_status=?, updated_at=?
+        WHERE id=?
+        """,
+        (
+            notes if notes is not None else row["notes"],
+            interest_level if interest_level is not None else row["interest_level"],
+            monitoring_status if monitoring_status is not None else row["monitoring_status"],
+            utc_now(),
+            company_id,
+        ),
+    )
+    return True
+
+
+def get_watchlist(
+    conn: sqlite3.Connection,
+    *,
+    status: str | None = "watching",
+) -> list[sqlite3.Row]:
+    if status:
+        return list(
+            conn.execute(
+                """
+                SELECT * FROM companies WHERE monitoring_status = ?
+                ORDER BY interest_level DESC, name COLLATE NOCASE
+                """,
+                (status,),
+            ).fetchall()
+        )
+    return list(
+        conn.execute(
+            "SELECT * FROM companies ORDER BY interest_level DESC, name COLLATE NOCASE"
+        ).fetchall()
+    )
+
+
+def mark_stale(
+    conn: sqlite3.Connection,
+    *,
+    older_than_days: int = 14,
+    source_id: str | None = None,
+    exclude_demo: bool = True,
+) -> int:
+    cutoff = datetime.now(timezone.utc).timestamp() - older_than_days * 86400
+    cutoff_iso = (
+        datetime.fromtimestamp(cutoff, tz=timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    sql = "UPDATE opportunities SET stale = 1 WHERE last_seen_at < ? AND stale = 0"
+    params: list[Any] = [cutoff_iso]
+    if exclude_demo:
+        sql += " AND is_demo = 0"
+    if source_id:
+        sql += " AND source_id = ?"
+        params.append(source_id)
+    return conn.execute(sql, params).rowcount
+
+
+def list_opportunities(
+    conn: sqlite3.Connection,
+    *,
+    category: str | None = None,
+    saved: int | None = None,
+    stale: int | None = None,
+    is_demo: int | None = None,
+    min_score: float | None = None,
+    status: str | None = None,
+    limit: int = 200,
+) -> list[sqlite3.Row]:
+    clauses: list[str] = []
+    params: list[Any] = []
+    if category:
+        clauses.append("category = ?"); params.append(category)
+    if saved is not None:
+        clauses.append("saved = ?"); params.append(saved)
+    if stale is not None:
+        clauses.append("stale = ?"); params.append(stale)
+    if is_demo is not None:
+        clauses.append("is_demo = ?"); params.append(is_demo)
+    if min_score is not None:
+        clauses.append("score_total >= ?"); params.append(min_score)
+    if status:
+        clauses.append("status = ?"); params.append(status)
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    params.append(limit)
+    return list(
+        conn.execute(
+            f"""
+            SELECT * FROM opportunities
+            {where}
+            ORDER BY COALESCE(score_total, -1) DESC, last_seen_at DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+    )
+
+
+def rows_to_dicts(rows) -> list[dict[str, Any]]:
+    return [dict(r) for r in rows]
+

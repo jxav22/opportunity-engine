@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Opportunity Engine{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">Opportunity <span>Engine</span></a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" class="{{ 'active' if nav == 'brief' else '' }}">Brief</a>
+        <a href="/opportunities" class="{{ 'active' if nav == 'opportunities' else '' }}">Inbox</a>
+        <a href="/companies" class="{{ 'active' if nav == 'companies' else '' }}">Companies</a>
+        <a href="/skills" class="{{ 'active' if nav == 'skills' else '' }}">Skills</a>
+        <a href="/actions" class="{{ 'active' if nav == 'actions' else '' }}">Actions</a>
+        <a href="/sources" class="{{ 'active' if nav == 'sources' else '' }}">Sources</a>
+        <a href="/profile" class="{{ 'active' if nav == 'profile' else '' }}">Profile</a>
+      </nav>
+    </header>
+
+    {% if has_demo is defined and (has_demo or mixed_demo) %}
+    <div class="banner" role="status">
+      {% if mixed_demo %}
+      <span class="tag tag-warn">Mixed demo + live data</span>
+      {% elif has_demo %}
+      <span class="tag tag-demo">Demo data shown — not live postings</span>
+      {% endif %}
+      {% if has_stale %}
+      <span class="tag tag-stale">Includes stale rows</span>
+      {% endif %}
+      {% if has_live %}
+      <span class="tag tag-live">Live rows present</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      Local-first · SQLite · Never fabricates company facts · Unknown = null
+    </footer>
+  </div>
+</body>
+</html>

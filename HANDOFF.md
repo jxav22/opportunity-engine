@@ -1,23 +1,23 @@
 # Opportunity Engine — Handoff (verified end-state)
 
-PRs **#2** (ranking) and **#1** (ingest) are merged to `main`. Persistence/UI worker owns full UI + long-term `db.py`/`models.py`.
+PRs **#2** (ranking), **#1** (ingest), and **#3** (E2E handoff) are on `main`. This branch adds company watchlist seed + full Jinja/HTMX UI.
 
 ## Verified E2E on main (Pacific/Auckland)
 
-Run on `main` @ `bee7740` (after PR #1 merge):
+Run on `main` @ `bee7740` / post-PR #3:
 
 ```bash
 pip install -e ".[dev]"   # or: pip install -r requirements.txt && pip install -e .
 python scripts/init_db.py
-python scripts/seed_demo.py
-python scripts/ingest_once.py --db data/opportunity_engine.db
-python -m opportunity_engine.scoring --db data/opportunity_engine.db
+python scripts/seed.py                  # profile + watchlist (no demos)
+# optional: python scripts/seed_demo.py
+python scripts/ingest_once.py --rescore
 pytest -q
-uvicorn opportunity_engine.web.app:app --reload
-# GET /api/opportunities?min_score=3.0
+uvicorn opportunity_engine.web.app:app --reload --port 8000
+# GET /  and  GET /api/opportunities?min_score=3.0
 ```
 
-**Observed results (this run):**
+**Observed results (ranking worker run):**
 
 | Check | Result |
 |-------|--------|
@@ -29,7 +29,7 @@ uvicorn opportunity_engine.web.app:app --reload
 | pytest | **25** passed (ingest + scoring + skills + actions) |
 | `GET /api/opportunities?min_score=3.0` | **200**, breakdowns present (**72** rows) |
 
-One-shot after this PR lands: `python scripts/ingest_once.py --rescore`
+One-shot: `python scripts/ingest_once.py --rescore`
 
 ### Live source coverage (`data/sources.json`)
 
@@ -55,9 +55,17 @@ Keep helper signatures on `db.py`: `init_db`, `connect`, `upsert_source`, `list_
 
 ---
 
-## Agent B — Persistence (+ UI)
+## Agent B — Persistence (+ UI / D+E)
 
-Owns `db.py`, `models.py`, company CRUD, full Jinja/HTMX UI. Schema bootstrap already on main — replace carefully; keep columns + ingest helpers. Do not break `/api/opportunities` field names (`score_breakdown`, `quality_score`, `accessibility_score`, action fields).
+**Owns:** `db.py`, `models.py`, `scripts/seed.py`, full `web/**`.
+
+**Landed on this branch:**
+- Additive helpers: `upsert_company`, `get_watchlist`, `update_company_notes`, `mark_stale`, `list_opportunities`, provenance merge in `raw_json` (ingest signatures unchanged)
+- `scripts/seed.py` — Auckland NZ profile + monitoring-only watchlist (`data_quality=partial`, unknown=NULL): Immersve, Halter, Partly, Tracksuit, Auror, Serko, Kernel, Trade Me, Immutable, Labrys + Xero, Sharesies; loads `data/sources.json`
+- Full Jinja2+HTMX UI: Brief `/`, Inbox `/opportunities`, Companies, Skills, Actions, Sources (+ refresh→ingest+rescore), Profile HTML
+- Preserved JSON APIs: `/api/opportunities`, `/api/profile`, `/api/rescore`, `/api/signals`, `/health`
+
+Do not break `/api/opportunities` field names (`score_breakdown`, `quality_score`, `accessibility_score`, action fields).
 
 ---
 
@@ -65,10 +73,10 @@ Owns `db.py`, `models.py`, company CRUD, full Jinja/HTMX UI. Schema bootstrap al
 
 **PR:** [#2](https://github.com/jxav22/opportunity-engine/pull/2) **merged**
 
-Profile, explainable scoring, skills, signals, actions, `rescore_all()`, minimal API shell. AI off by default. `score_breakdown_json` = `{dimensions, penalties, blend, weights_used}`.
+Profile, explainable scoring, skills, signals, actions, `rescore_all()`, AI off by default. `score_breakdown_json` = `{dimensions, penalties, blend, weights_used}`.
 
 ---
 
 ## Agents D / E
 
-Concurrency-capped originally; vertical slice covered by ranking + ingest on main. Full Intelligence Brief / Inbox / Explorer UI still for persistence/UI owner.
+Covered by B (concurrency). Full Intelligence Brief / Inbox / Explorer / Skills / Actions / Sources UI is in this PR.

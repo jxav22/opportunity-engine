@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Skills · Opportunity Engine{% endblock %}
+{% block content %}
+  <h1>Skills Radar</h1>
+  <p class="lede">Demand from skill mentions and opportunity skill tags. Extraction logic is Agent C’s domain.</p>
+
+  <div class="panel">
+    {% if demand %}
+      {% set max_m = demand[0].mentions if demand else 1 %}
+      {% for d in demand %}
+      <div style="margin-bottom:0.75rem">
+        <div style="display:flex;justify-content:space-between;gap:1rem">
+          <strong>{{ d.skill }}</strong>
+          <span class="muted">{{ d.mentions }}</span>
+        </div>
+        <div class="bar"><i style="width:{{ (d.mentions / max_m * 100)|round }}%"></i></div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <p class="muted">No skill signal yet. Seed demos or run ingest + extraction.</p>
+    {% endif %}
+  </div>
+{% endblock %}

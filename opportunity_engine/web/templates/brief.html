@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "macros.html" import opp_flags, score_cell, nullish %}
+{% block title %}Brief · Opportunity Engine{% endblock %}
+{% block content %}
+  <h1>Intelligence Brief</h1>
+  <p class="lede">
+    {{ profile.name | default('Operator') }} · {{ profile.location | default('—') }}.
+    Watchlist and inbox snapshot. Companies here are monitoring targets — not hiring claims.
+  </p>
+
+  <div class="grid-3" style="margin-bottom:1.25rem">
+    <div class="panel">
+      <div class="stat-label">Watching</div>
+      <div class="stat">{{ counts.watching }}</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Opportunities</div>
+      <div class="stat">{{ counts.opportunities }}</div>
+      <div class="muted">{{ counts.live }} live · {{ counts.demo }} demo · {{ counts.stale }} stale</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Sources</div>
+      <div class="stat">{{ sources | selectattr('enabled') | list | length }}</div>
+      <div class="muted">{{ sources | length }} registered</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Top of inbox</h2>
+        <a href="/opportunities">Open inbox</a>
+      </div>
+      {% if opportunities %}
+      <div class="stack">
+        {% for o in opportunities %}
+        <div class="list-row">
+          <div>
+            <div class="title">{{ o.title }}</div>
+            <div class="muted">
+              {{ o.company_name }}
+              {% if o.location %} · {{ o.location }}{% endif %}
+              · {{ o.category }}
+            </div>
+            <div style="margin-top:0.25rem">{{ opp_flags(o) }}</div>
+          </div>
+          <div>{{ score_cell(o) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No opportunities yet. Configure sources and run ingest, or seed demos.</p>
+      {% endif %}
+    </section>
+
+    <div class="stack">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Watchlist</h2>
+          <a href="/companies">Explorer</a>
+        </div>
+        {% for c in watch %}
+        <div class="list-row">
+          <div>
+            <a class="title" href="/companies/{{ c.id }}">{{ c.name }}</a>
+            <div class="muted">{{ nullish(c.location) }} · interest {{ c.interest_level }}/5</div>
+          </div>
+          <span class="tag tag-partial">{{ c.data_quality }}</span>
+        </div>
+        {% else %}
+        <p class="muted">Watchlist empty.</p>
+        {% endfor %}
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Signals</h2>
+        </div>
+        {% if signals %}
+          {% for s in signals %}
+          <div class="list-row">
+            <div>
+              <div class="title">{{ s.title }}</div>
+              <div class="muted">{{ s.kind }} · strength {{ '%.2f'|format(s.strength) }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+        <p class="muted">No signals yet (Agent C / ingest).</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}
