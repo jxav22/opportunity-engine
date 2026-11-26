@@ -21,6 +21,56 @@
       }
     },
     {
+      "id": "gh-anthropic",
+      "name": "Anthropic (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "anthropic",
+        "company_name": "Anthropic"
+      }
+    },
+    {
+      "id": "gh-cloudflare",
+      "name": "Cloudflare (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "cloudflare",
+        "company_name": "Cloudflare"
+      }
+    },
+    {
+      "id": "gh-vercel",
+      "name": "Vercel (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "vercel",
+        "company_name": "Vercel"
+      }
+    },
+    {
+      "id": "gh-figma",
+      "name": "Figma (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "figma",
+        "company_name": "Figma"
+      }
+    },
+    {
+      "id": "gh-wise",
+      "name": "Wise (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "wise",
+        "company_name": "Wise"
+      }
+    },
+    {
       "id": "lever-spotify",
       "name": "Spotify (Lever)",
       "adapter": "lever",
@@ -28,6 +78,16 @@
       "config": {
         "site": "spotify",
         "company_name": "Spotify"
+      }
+    },
+    {
+      "id": "lever-palantir",
+      "name": "Palantir (Lever)",
+      "adapter": "lever",
+      "enabled": 1,
+      "config": {
+        "site": "palantir",
+        "company_name": "Palantir"
       }
     },
     {
@@ -51,6 +111,86 @@
       }
     },
     {
+      "id": "ashby-auror",
+      "name": "Auror (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "auror",
+        "company_name": "Auror"
+      }
+    },
+    {
+      "id": "ashby-xero",
+      "name": "Xero (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "xero",
+        "company_name": "Xero"
+      }
+    },
+    {
+      "id": "ashby-linear",
+      "name": "Linear (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "linear",
+        "company_name": "Linear"
+      }
+    },
+    {
+      "id": "ashby-cursor",
+      "name": "Cursor (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "cursor",
+        "company_name": "Cursor"
+      }
+    },
+    {
+      "id": "ashby-posthog",
+      "name": "PostHog (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "posthog",
+        "company_name": "PostHog"
+      }
+    },
+    {
+      "id": "ashby-supabase",
+      "name": "Supabase (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "supabase",
+        "company_name": "Supabase"
+      }
+    },
+    {
+      "id": "ashby-ramp",
+      "name": "Ramp (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "ramp",
+        "company_name": "Ramp"
+      }
+    },
+    {
+      "id": "ashby-openai",
+      "name": "OpenAI (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "openai",
+        "company_name": "OpenAI"
+      }
+    },
+    {
       "id": "rss-remotive",
       "name": "Remotive Remote Jobs (RSS)",
       "adapter": "rss",
@@ -64,12 +204,133 @@
       }
     },
     {
+      "id": "rss-show-hn",
+      "name": "Show HN (community)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://hnrss.org/newest?q=Show+HN",
+        "company_name": "Hacker News",
+        "category": "community",
+        "max_items": 30
+      }
+    },
+    {
+      "id": "rss-github-blog",
+      "name": "GitHub Blog (community)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://github.blog/feed/",
+        "company_name": "GitHub",
+        "category": "community",
+        "max_items": 20
+      }
+    },
+    {
+      "id": "github-nextjs-releases",
+      "name": "Next.js Releases (GitHub Atom)",
+      "adapter": "github",
+      "enabled": 1,
+      "config": {
+        "owner": "vercel",
+        "repo": "next.js",
+        "company_name": "Vercel/Next.js",
+        "category": "community",
+        "max_items": 15
+      }
+    },
+    {
+      "id": "rss-antler",
+      "name": "Antler (accelerator blog RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://www.antler.co/blog/rss.xml",
+        "company_name": "Antler",
+        "category": "entrepreneurial",
+        "max_items": 20
+      }
+    },
+    {
+      "id": "rss-producthunt",
+      "name": "Product Hunt launches (RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://www.producthunt.com/feed",
+        "company_name": "Product Hunt",
+        "category": "entrepreneurial",
+        "max_items": 25
+      }
+    },
+    {
+      "id": "rss-yc-blog",
+      "name": "Y Combinator Blog (RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://www.ycombinator.com/blog/feed",
+        "company_name": "Y Combinator",
+        "category": "entrepreneurial",
+        "max_items": 20
+      }
+    },
+    {
+      "id": "rss-tc-funding",
+      "name": "TechCrunch Funding (RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://techcrunch.com/tag/funding/feed/",
+        "company_name": "TechCrunch",
+        "category": "entrepreneurial",
+        "max_items": 20
+      }
+    },
+    {
+      "id": "rss-idealog",
+      "name": "Idealog NZ (RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://idealog.co.nz/feed",
+        "company_name": "Idealog",
+        "category": "entrepreneurial",
+        "max_items": 15
+      }
+    },
+    {
       "id": "manual-seed",
       "name": "Manual registrations",
       "adapter": "manual",
       "enabled": 1,
       "config": {
         "path": "data/manual_opportunities.json"
+      }
+    },
+    {
+      "id": "rss-rnz-tech",
+      "name": "RNZ Technology (RSS) — disabled dead feed",
+      "adapter": "rss",
+      "enabled": 0,
+      "config": {
+        "url": "https://www.rnz.co.nz/rss/technology.xml",
+        "company_name": "RNZ Technology",
+        "category": "community",
+        "max_items": 20
+      }
+    },
+    {
+      "id": "rss-creative-hq",
+      "name": "Creative HQ (RSS) — disabled 403",
+      "adapter": "rss",
+      "enabled": 0,
+      "config": {
+        "url": "https://www.creativehq.co.nz/feed",
+        "company_name": "Creative HQ",
+        "category": "entrepreneurial",
+        "max_items": 20
       }
     }
   ]

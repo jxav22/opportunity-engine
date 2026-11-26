@@ -1,10 +1,8 @@
 # Opportunity Engine — Handoff (verified end-state)
 
-PRs **#2** (ranking), **#1** (ingest), and **#3** (E2E handoff) are on `main`. This branch adds company watchlist seed + full Jinja/HTMX UI.
+PRs **#1** (ingest), **#2** (ranking), **#3** (E2E handoff), **#4** (watchlist + UI) are on `main`. This branch expands live public source coverage.
 
-## Verified E2E on main (Pacific/Auckland)
-
-Run on `main` @ `bee7740` / post-PR #3:
+## Verified commands
 
 ```bash
 pip install -e ".[dev]"   # or: pip install -r requirements.txt && pip install -e .
@@ -17,39 +15,30 @@ uvicorn opportunity_engine.web.app:app --reload --port 8000
 # GET /  and  GET /api/opportunities?min_score=3.0
 ```
 
-**Observed results (ranking worker run):**
+**Baseline E2E (pre-expansion, ranking worker):** 7/7 sources ok · 418 live + 3 demo · 421 scored · API 200 with breakdowns.
 
-| Check | Result |
-|-------|--------|
-| Sources | **7/7 ok** |
-| Opportunities | **421** total (**418** live `is_demo=0`, **3** demo) |
-| Scored | **421** with breakdowns |
-| Signals | 27 |
-| Skill mentions | 1439 |
-| pytest | **25** passed (ingest + scoring + skills + actions) |
-| `GET /api/opportunities?min_score=3.0` | **200**, breakdowns present (**72** rows) |
+**Expansion smoke (PR #5):** 22 net-new enabled sources live-verified · `items_seen≈3238` · categories employment/community/entrepreneurial · CLI exit 0. Body cap 16 MiB for large boards.
 
 One-shot: `python scripts/ingest_once.py --rescore`
-
-### Live source coverage (`data/sources.json`)
-
-| Source id | Adapter | Board / feed | Items (this run) |
-|-----------|---------|--------------|------------------|
-| `gh-discord` | greenhouse | Discord public board | 30 |
-| `gh-gitlab` | greenhouse | GitLab public board | 242 |
-| `lever-spotify` | lever | Spotify | 97 |
-| `ashby-tracksuit` | ashby | Tracksuit (NZ) | 19 |
-| `ashby-kernel` | ashby | Kernel (NZ) | 12 |
-| `rss-remotive` | rss | remotive.com remote jobs feed | 17 |
-| `manual-seed` | manual | `data/manual_opportunities.json` | 1 |
-
-All live rows stored with `is_demo=0`. Dead boards fail per-source without fabricating jobs.
 
 ---
 
 ## Agent A — Ingestion
 
-**PR:** [#1](https://github.com/jxav22/opportunity-engine/pull/1) **merged**
+**PR:** [#1](https://github.com/jxav22/opportunity-engine/pull/1) **merged**  
+**Expansion:** [#5](https://github.com/jxav22/opportunity-engine/pull/5) (`cursor/expand-ingest-sources-ff5d`)
+
+- SSRF-safe adapters: greenhouse, lever, ashby, rss, manual, github releases
+- `scripts/ingest_once.py` (`--rescore` optional); live rows `is_demo=0`
+- Fetch body cap **16 MiB** (scheme/IP guards unchanged)
+
+### Seed coverage (live-verified)
+
+**Employment (original):** Discord GH, GitLab GH, Spotify Lever, Tracksuit Ashby (NZ), Kernel Ashby (NZ), Remotive RSS, manual  
+**Employment (net-new):** Anthropic/Cloudflare/Vercel/Figma/Wise GH; Palantir Lever; Auror+Xero Ashby (NZ); Linear/Cursor/PostHog/Supabase/Ramp/OpenAI Ashby  
+**Community:** Show HN RSS, GitHub Blog RSS, Next.js GitHub releases  
+**Entrepreneurial:** Antler accelerator RSS, Product Hunt, YC Blog, TechCrunch Funding, Idealog NZ  
+**Disabled after failed live fetch:** RNZ Technology (dead feed), Creative HQ (403)
 
 Keep helper signatures on `db.py`: `init_db`, `connect`, `upsert_source`, `list_enabled_sources`, `ensure_company`, `upsert_opportunity`, `start_ingest_run`, `finish_ingest_run`, `DEFAULT_DB_PATH`, `utc_now`.
 
@@ -57,15 +46,13 @@ Keep helper signatures on `db.py`: `init_db`, `connect`, `upsert_source`, `list_
 
 ## Agent B — Persistence (+ UI / D+E)
 
-**Owns:** `db.py`, `models.py`, `scripts/seed.py`, full `web/**`.
+**PR:** [#4](https://github.com/jxav22/opportunity-engine/pull/4) **merged**
 
-**Landed on this branch:**
-- Additive helpers: `upsert_company`, `get_watchlist`, `update_company_notes`, `mark_stale`, `list_opportunities`, provenance merge in `raw_json` (ingest signatures unchanged)
-- `scripts/seed.py` — Auckland NZ profile + monitoring-only watchlist (`data_quality=partial`, unknown=NULL): Immersve, Halter, Partly, Tracksuit, Auror, Serko, Kernel, Trade Me, Immutable, Labrys + Xero, Sharesies; loads `data/sources.json`
-- Full Jinja2+HTMX UI: Brief `/`, Inbox `/opportunities`, Companies, Skills, Actions, Sources (+ refresh→ingest+rescore), Profile HTML
-- Preserved JSON APIs: `/api/opportunities`, `/api/profile`, `/api/rescore`, `/api/signals`, `/health`
+Owns `db.py`, `models.py`, `scripts/seed.py`, full `web/**`.
 
-Do not break `/api/opportunities` field names (`score_breakdown`, `quality_score`, `accessibility_score`, action fields).
+- Additive helpers: `upsert_company`, `get_watchlist`, `update_company_notes`, `mark_stale`, `list_opportunities` (ingest signatures unchanged)
+- Full Jinja2+HTMX UI: Brief `/`, Inbox `/opportunities`, Companies, Skills, Actions, Sources, Profile
+- JSON APIs preserved: `/api/opportunities`, `/api/profile`, `/api/rescore`, `/api/signals`, `/health`
 
 ---
 
@@ -79,4 +66,4 @@ Profile, explainable scoring, skills, signals, actions, `rescore_all()`, AI off 
 
 ## Agents D / E
 
-Covered by B (concurrency). Full Intelligence Brief / Inbox / Explorer / Skills / Actions / Sources UI is in this PR.
+Covered by B (concurrency). UI is on main via PR #4.

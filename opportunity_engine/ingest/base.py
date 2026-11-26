@@ -135,9 +135,13 @@ def safe_get(
     *,
     params: dict[str, Any] | None = None,
     headers: dict[str, str] | None = None,
-    max_bytes: int = 5_000_000,
+    max_bytes: int = 16_000_000,
 ) -> httpx.Response:
-    """SSRF-safe GET with politeness delay, timeouts, and size cap."""
+    """SSRF-safe GET with politeness delay, timeouts, and size cap.
+
+    Default body cap is 16 MiB — large enough for public job-board JSON
+    (e.g. OpenAI Ashby / Palantir Lever) while still bounding abuse.
+    """
     validate_fetch_url(url)
     elapsed = time.monotonic() - ctx._last_fetch_at
     if elapsed < ctx.min_interval_seconds:
