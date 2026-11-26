@@ -8,7 +8,7 @@ Local-first opportunity ranking engine: ingest public job boards → explainable
 
 ```bash
 pip install -e ".[dev]"
-# or: pip install -r requirements.txt
+# or: pip install -r requirements.txt  (scripts add repo root to sys.path)
 
 python scripts/init_db.py
 python scripts/seed.py                      # profile + company watchlist
@@ -16,6 +16,7 @@ python scripts/ingest_once.py --rescore     # live public boards + rank
 pytest -q
 
 uvicorn opportunity_engine.web.app:app --reload --port 8000
+# open http://127.0.0.1:8000
 ```
 
 Optional labeled demos (`is_demo=1`):
