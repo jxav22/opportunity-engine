@@ -1,0 +1,55 @@
+{
+  "name": "Jason Xavier",
+  "location": "Auckland, New Zealand",
+  "citizenship": [
+    "NZ"
+  ],
+  "education": [
+    {
+      "degree": "BE(Hons) Software Engineering",
+      "institution": "University of Auckland"
+    }
+  ],
+  "years_experience": 1.5,
+  "skills": [
+    "C#",
+    ".NET",
+    "JavaScript",
+    "full-stack",
+    "mobile",
+    "Web3",
+    "DeFi"
+  ],
+  "interests": [
+    "exceptional engineering teams",
+    "technically demanding environments",
+    "entrepreneurship",
+    "emerging industries",
+    "remote work",
+    "mentorship",
+    "autonomy",
+    "compensation",
+    "technical growth",
+    "optionality"
+  ],
+  "willing_to_relocate": true,
+  "risk_tolerance": "calculated",
+  "ranking_weights": {
+    "technical_growth": 1.2,
+    "engineering_culture": 1.1,
+    "peer_quality": 1.1,
+    "compensation": 1.0,
+    "accessibility": 1.0,
+    "career_capital": 1.2,
+    "industry_growth": 1.0,
+    "autonomy": 1.0,
+    "lifestyle": 0.9,
+    "optionality": 1.1,
+    "entrepreneurial_upside": 1.0,
+    "evidence_strength": 1.3
+  },
+  "score_blend": {
+    "quality": 0.7,
+    "accessibility": 0.3
+  }
+}
