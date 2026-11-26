@@ -1,17 +1,13 @@
 # Opportunity Engine — Handoff (verified end-state)
 
-<<<<<<< HEAD
-PRs **#1** (ingest), **#2** (ranking), **#3** (E2E handoff), **#4** (watchlist + UI) are on `main`. This branch expands live public source coverage.
-
-## Verified commands
-=======
-PRs **#1** (ingest), **#2** (ranking), **#3** (E2E handoff), and **#4** (watchlist seed + full UI) are on `main`.
+PRs **#1**–**#6** are on `main` (ingest, ranking, E2E handoff, watchlist+UI, expanded sources, init_db path bootstrap).
 
 ## Quickstart (current)
->>>>>>> 5bd1423 (fix(scripts): bootstrap sys.path in init_db and seed_demo)
 
 ```bash
-pip install -e ".[dev]"   # or: pip install -r requirements.txt
+pip install -e ".[dev]"
+# or: pip install -r requirements.txt  (scripts bootstrap repo root on sys.path)
+
 python scripts/init_db.py
 python scripts/seed.py                  # profile + watchlist (no demos)
 # optional: python scripts/seed_demo.py / seed.py --with-demo
@@ -22,17 +18,13 @@ uvicorn opportunity_engine.web.app:app --reload --port 8000
 # API: GET /api/opportunities?min_score=3.0
 ```
 
-<<<<<<< HEAD
-**Baseline E2E (pre-expansion, ranking worker):** 7/7 sources ok · 418 live + 3 demo · 421 scored · API 200 with breakdowns.
-=======
-## Verified E2E on main (Pacific/Auckland)
+**Baseline E2E (pre-expansion):** 7/7 sources ok · 418 live + 3 demo · 421 scored · API 200 with breakdowns.
 
-Ranking-worker run @ `bee7740` / post-PR #3 (before UI merge):
->>>>>>> 5bd1423 (fix(scripts): bootstrap sys.path in init_db and seed_demo)
+**Expansion (PR #5):** 22 net-new enabled sources · ~29 enabled total · categories employment/community/entrepreneurial · body cap 16 MiB. Post-merge smoke: thousands of live rows ingested (CLI exit 0).
 
-**Expansion smoke (PR #5):** 22 net-new enabled sources live-verified · `items_seen≈3238` · categories employment/community/entrepreneurial · CLI exit 0. Body cap 16 MiB for large boards.
+**UI smoke (PR #4):** all HTML routes + `/api/*` + company watch POST → **200 OK**.
 
-Post-PR #4 UI smoke (all HTML routes + `/api/*` + company watch POST): **200 OK**.
+**Scripts (PR #6):** `init_db.py` / `seed_demo.py` work with `pip install -r` (sys.path bootstrap).
 
 One-shot: `python scripts/ingest_once.py --rescore`
 
@@ -41,7 +33,7 @@ One-shot: `python scripts/ingest_once.py --rescore`
 ## Agent A — Ingestion
 
 **PR:** [#1](https://github.com/jxav22/opportunity-engine/pull/1) **merged**  
-**Expansion:** [#5](https://github.com/jxav22/opportunity-engine/pull/5) (`cursor/expand-ingest-sources-ff5d`)
+**Expansion:** [#5](https://github.com/jxav22/opportunity-engine/pull/5) **merged**
 
 - SSRF-safe adapters: greenhouse, lever, ashby, rss, manual, github releases
 - `scripts/ingest_once.py` (`--rescore` optional); live rows `is_demo=0`
@@ -61,17 +53,10 @@ Keep helper signatures on `db.py`: `init_db`, `connect`, `upsert_source`, `list_
 
 ## Agent B — Persistence (+ UI / D+E)
 
-**PR:** [#4](https://github.com/jxav22/opportunity-engine/pull/4) **merged**
+**PR:** [#4](https://github.com/jxav22/opportunity-engine/pull/4) **merged**  
+**Follow-up:** [#6](https://github.com/jxav22/opportunity-engine/pull/6) **merged** — `init_db.py` / `seed_demo.py` sys.path bootstrap
 
-<<<<<<< HEAD
 Owns `db.py`, `models.py`, `scripts/seed.py`, full `web/**`.
-=======
-**Landed (PR #4 merged):**
-- Additive helpers: `upsert_company`, `get_watchlist`, `update_company_notes`, `mark_stale`, `list_opportunities`, provenance merge in `raw_json` (ingest signatures unchanged)
-- `scripts/seed.py` — Auckland NZ profile + monitoring-only watchlist (`data_quality=partial`, unknown=NULL): Immersve, Halter, Partly, Tracksuit, Auror, Serko, Kernel, Trade Me, Immutable, Labrys + Xero, Sharesies; loads `data/sources.json`
-- Full Jinja2+HTMX UI: Brief `/`, Inbox `/opportunities`, Companies, Skills, Actions, Sources (+ refresh→ingest+rescore), Profile HTML
-- Preserved JSON APIs: `/api/opportunities`, `/api/profile`, `/api/rescore`, `/api/signals`, `/health`
->>>>>>> 5bd1423 (fix(scripts): bootstrap sys.path in init_db and seed_demo)
 
 - Additive helpers: `upsert_company`, `get_watchlist`, `update_company_notes`, `mark_stale`, `list_opportunities` (ingest signatures unchanged)
 - Full Jinja2+HTMX UI: Brief `/`, Inbox `/opportunities`, Companies, Skills, Actions, Sources, Profile
@@ -89,8 +74,4 @@ Profile, explainable scoring, skills, signals, actions, `rescore_all()`, AI off 
 
 ## Agents D / E
 
-<<<<<<< HEAD
 Covered by B (concurrency). UI is on main via PR #4.
-=======
-Covered by B (concurrency). Full Intelligence Brief / Inbox / Explorer / Skills / Actions / Sources UI is on `main` via PR #4.
->>>>>>> 5bd1423 (fix(scripts): bootstrap sys.path in init_db and seed_demo)
