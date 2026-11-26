@@ -1,0 +1,76 @@
+{
+  "sources": [
+    {
+      "id": "gh-discord",
+      "name": "Discord (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "discord",
+        "company_name": "Discord"
+      }
+    },
+    {
+      "id": "gh-gitlab",
+      "name": "GitLab (Greenhouse)",
+      "adapter": "greenhouse",
+      "enabled": 1,
+      "config": {
+        "board_token": "gitlab",
+        "company_name": "GitLab"
+      }
+    },
+    {
+      "id": "lever-spotify",
+      "name": "Spotify (Lever)",
+      "adapter": "lever",
+      "enabled": 1,
+      "config": {
+        "site": "spotify",
+        "company_name": "Spotify"
+      }
+    },
+    {
+      "id": "ashby-tracksuit",
+      "name": "Tracksuit (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "tracksuit",
+        "company_name": "Tracksuit"
+      }
+    },
+    {
+      "id": "ashby-kernel",
+      "name": "Kernel (Ashby)",
+      "adapter": "ashby",
+      "enabled": 1,
+      "config": {
+        "board": "kernel",
+        "company_name": "Kernel"
+      }
+    },
+    {
+      "id": "rss-remotive",
+      "name": "Remotive Remote Jobs (RSS)",
+      "adapter": "rss",
+      "enabled": 1,
+      "config": {
+        "url": "https://remotive.com/remote-jobs/feed",
+        "infer_company_from_title": true,
+        "default_location": "Remote",
+        "category": "employment",
+        "max_items": 50
+      }
+    },
+    {
+      "id": "manual-seed",
+      "name": "Manual registrations",
+      "adapter": "manual",
+      "enabled": 1,
+      "config": {
+        "path": "data/manual_opportunities.json"
+      }
+    }
+  ]
+}

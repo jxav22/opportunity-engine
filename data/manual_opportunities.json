@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "id": "ua-careers-example",
+      "title": "Software Engineer — Careers page watch",
+      "company_name": "University of Auckland",
+      "location": "Auckland, New Zealand",
+      "url": "https://www.auckland.ac.nz/en/about-us/careers.html",
+      "description": "Manual watch entry for NZ university careers page (not a fabricated job posting).",
+      "posted_at": null,
+      "category": "employment"
+    }
+  ]
+}

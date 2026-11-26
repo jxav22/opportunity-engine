@@ -5,15 +5,31 @@ Shared integration notes across agents. Pull/rebase often.
 ## Agent A — Source adapters / ingestion
 
 **Branch:** `cursor/agent-a-ingestion-ff5d`  
-**Status:** Working ingest pipeline landed (scaffold stub `db.py`/`models.py` matching contracts until Agent B replaces). Live verified ≥3 sources.
+**PR:** https://github.com/jxav22/opportunity-engine/pull/1  
+**Status:** Rebased onto main after Agent C merge. Live verified ≥3 sources (Discord GH, Spotify Lever, Tracksuit/Kernel Ashby, Remotive RSS, manual). Prefers main’s `db.py`/`models.py`.
 
 ### Delivered
-- SSRF-safe adapters: greenhouse, lever, ashby, rss, manual, github releases
-- `pipeline.py`, `scripts/ingest_once.py`, seeds in `data/sources.json`
+- `opportunity_engine/ingest/base.py` — `SourceAdapter` protocol, `RawItem`, `IngestContext`, SSRF-safe `safe_get` (http/https only; block private/link-local/metadata; timeouts; politeness delay)
+- Adapters: `greenhouse`, `lever`, `ashby`, `rss` (feedparser), `manual` (JSON/file), `github` (releases atom via RSS)
+- `pipeline.py` — normalize → dedupe_key → company linkage → opportunity upsert; `ingest_runs` + source health
+- `scripts/ingest_once.py` — CLI seeds `data/sources.json`, runs enabled sources, prints JSON summary, exit 0 if ≥1 source ok
+- Seeds (verified live): Discord Greenhouse, GitLab Greenhouse, Spotify Lever, Tracksuit Ashby (NZ), Kernel Ashby (NZ), Remotive RSS, manual file
+- Live rows always `is_demo=0`; no fabricated jobs
 - Tests: `tests/test_ingest_*`
 
 ### Notes for others
 - Keep helper signatures: `init_db`, `connect`, `upsert_source`, `list_enabled_sources`, `ensure_company`, `upsert_opportunity`, `start_ingest_run`, `finish_ingest_run`, `DEFAULT_DB_PATH`, `utc_now`
+- Dead boards fail per-source gracefully; CLI still exits 0 if other sources succeed
+- Rate limit: default 0.4s between fetches in `IngestContext`
+- Depends on `feedparser` (in `requirements.txt` / should be in `pyproject.toml` deps)
+
+### Verify
+```bash
+pip install -r requirements.txt
+# or: pip install -e ".[dev]" && pip install feedparser
+python scripts/ingest_once.py --db data/opportunity_engine.db
+pytest tests/test_ingest* -q
+```
 
 ## Agent B — Persistence
 _Status: coordinate on main._ Schema bootstrap in `opportunity_engine/db.py` (contract-aligned, includes Agent A ingest helpers) so ranking/API/ingest can run. **Agent B should take ownership** of `db.py` / `models.py` / seed scripts; Agent C will rebase onto B’s schema without changing column names.
