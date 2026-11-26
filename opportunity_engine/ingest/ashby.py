@@ -30,17 +30,25 @@ class AshbyAdapter:
             title = (job.get("title") or "").strip()
             if not title:
                 continue
-            location = job.get("location")
-            if isinstance(location, dict):
-                location = location.get("name") or location.get("address")
+            def _loc_str(loc: object) -> str:
+                if loc is None:
+                    return ""
+                if isinstance(loc, str):
+                    return loc
+                if isinstance(loc, dict):
+                    return str(
+                        loc.get("name")
+                        or loc.get("location")
+                        or loc.get("address")
+                        or loc.get("postalAddress")
+                        or ""
+                    )
+                return str(loc)
+
+            location = _loc_str(job.get("location")) or None
             secondary = job.get("secondaryLocations") or []
             if location and secondary:
-                extra = []
-                for loc in secondary:
-                    if isinstance(loc, dict):
-                        extra.append(loc.get("name") or loc.get("address") or "")
-                    else:
-                        extra.append(str(loc))
+                extra = [_loc_str(loc) for loc in secondary]
                 extra = [e for e in extra if e]
                 if extra:
                     location = f"{location}; " + "; ".join(extra)
