@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% from "macros.html" import opp_flags, score_cell, nullish %}
+{% block title %}{{ company.name }} · Opportunity Engine{% endblock %}
+{% block content %}
+  <p class="muted"><a href="/companies">← Companies</a></p>
+  <h1>{{ company.name }}</h1>
+  <p class="lede">
+    Monitoring target · <span class="tag tag-partial">{{ company.data_quality }}</span>
+    · {{ company.monitoring_status }}. Unknown facts are shown as unknown — not invented.
+  </p>
+
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head"><h2>Facts on file</h2></div>
+      <table class="data">
+        <tr><th>Website</th><td>{% if company.website %}<a href="{{ company.website }}" rel="noopener noreferrer" target="_blank">{{ company.website }}</a>{% else %}<span class="null">unknown</span>{% endif %}</td></tr>
+        <tr><th>Location</th><td>{{ nullish(company.location) }}</td></tr>
+        <tr><th>Industry</th><td>{{ nullish(company.industry) }}</td></tr>
+        <tr><th>Size</th><td>{{ nullish(company.company_size) }}</td></tr>
+        <tr><th>Funding</th><td>{{ nullish(company.funding_stage) }}</td></tr>
+        <tr><th>Remote</th><td>{{ nullish(company.remote_policy) }}</td></tr>
+        <tr><th>Stack</th><td>{{ nullish(company.engineering_stack_json) }}</td></tr>
+        <tr><th>Why interesting</th><td>{{ nullish(company.why_interesting) }}</td></tr>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Watch controls</h2></div>
+      <form class="form-grid" method="post" action="/companies/{{ company.id }}/watch">
+        <label>Interest (0–5)
+          <input type="number" name="interest_level" min="0" max="5" value="{{ company.interest_level }}" />
+        </label>
+        <label>Monitoring status
+          <select name="monitoring_status">
+            {% for s in ['watching','paused','archived'] %}
+            <option value="{{ s }}" {% if company.monitoring_status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Notes
+          <textarea name="notes" style="min-height:6rem">{{ company.notes or '' }}</textarea>
+        </label>
+        <button type="submit">Save</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:1.25rem">
+    <div class="panel-head"><h2>Linked opportunities</h2></div>
+    {% if opportunities %}
+    <table class="data">
+      <thead><tr><th>Title</th><th>Flags</th><th>Score</th></tr></thead>
+      <tbody>
+        {% for o in opportunities %}
+        <tr>
+          <td><a href="{{ o.url }}" rel="noopener noreferrer" target="_blank">{{ o.title }}</a></td>
+          <td>{{ opp_flags(o) }}</td>
+          <td>{{ score_cell(o) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No linked opportunities (expected until live ingest).</p>
+    {% endif %}
+  </section>
+
+  <section class="panel" style="margin-top:1.25rem">
+    <div class="panel-head"><h2>Developments</h2></div>
+    {% if developments %}
+      {% for d in developments %}
+      <div class="list-row">
+        <div>
+          <div class="title">{{ d.title }}</div>
+          <div class="muted">{{ d.kind }} · {{ d.observed_at }}{% if d.is_hiring_evidence %} · hiring evidence{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <p class="muted">No developments recorded.</p>
+    {% endif %}
+  </section>
+{% endblock %}

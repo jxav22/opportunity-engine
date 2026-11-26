@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Sources · Opportunity Engine{% endblock %}
+{% block content %}
+  <h1>Source Health</h1>
+  <p class="lede">Adapter registration and last run status. Refresh invokes <code>scripts/ingest_once.py</code> when Agent A has landed it.</p>
+
+  {% if request.query_params.get('refresh') %}
+  <div class="flash {% if request.query_params.get('refresh') == 'error' %}error{% endif %}">
+    Refresh: {{ request.query_params.get('refresh') }}
+    {% if request.query_params.get('msg') %} — {{ request.query_params.get('msg') }}{% endif %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="/sources/refresh" style="margin-bottom:1rem">
+    <button type="submit">Refresh sources</button>
+  </form>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Registered sources</h2></div>
+    <table class="data">
+      <thead>
+        <tr><th>Name</th><th>Adapter</th><th>Enabled</th><th>Last success</th><th>Last error</th></tr>
+      </thead>
+      <tbody>
+        {% for s in sources %}
+        <tr>
+          <td>{{ s.name }} <span class="muted">{{ s.id }}</span></td>
+          <td>{{ s.adapter }}</td>
+          <td>{% if s.enabled %}<span class="tag tag-live">on</span>{% else %}<span class="tag tag-stale">off</span>{% endif %}</td>
+          <td class="muted">{{ s.last_success_at or '—' }}</td>
+          <td class="muted">{{ s.last_error or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No sources.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel" style="margin-top:1.25rem">
+    <div class="panel-head"><h2>Recent ingest runs</h2></div>
+    {% if runs %}
+    <table class="data">
+      <thead><tr><th>Source</th><th>Status</th><th>Seen</th><th>New</th><th>Started</th></tr></thead>
+      <tbody>
+        {% for r in runs %}
+        <tr>
+          <td>{{ r.source_id }}</td>
+          <td>{{ r.status }}</td>
+          <td>{{ r.items_seen }}</td>
+          <td>{{ r.items_new }}</td>
+          <td class="muted">{{ r.started_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No ingest runs recorded yet.</p>
+    {% endif %}
+  </div>
+{% endblock %}

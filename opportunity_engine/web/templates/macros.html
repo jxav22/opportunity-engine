@@ -1,0 +1,16 @@
+{% macro opp_flags(o) -%}
+  {% if o.is_demo %}<span class="tag tag-demo">Demo</span>{% else %}<span class="tag tag-live">Live</span>{% endif %}
+  {% if o.stale %}<span class="tag tag-stale">Stale</span>{% endif %}
+{%- endmacro %}
+
+{% macro score_cell(o) -%}
+  {% if o.score_total is not none %}
+    <span class="score">{{ '%.1f'|format(o.score_total) }}</span>
+  {% else %}
+    <span class="null">—</span>
+  {% endif %}
+{%- endmacro %}
+
+{% macro nullish(v) -%}
+  {% if v %}{{ v }}{% else %}<span class="null">unknown</span>{% endif %}
+{%- endmacro %}

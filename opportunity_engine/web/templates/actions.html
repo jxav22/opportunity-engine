@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "macros.html" import opp_flags, score_cell %}
+{% block title %}Actions · Opportunity Engine{% endblock %}
+{% block content %}
+  <h1>Action Queue</h1>
+  <p class="lede">Saved opportunities and rows with an explicit next action. Recommendations stubbed until Agent C fills them.</p>
+
+  <div class="panel">
+    {% if actions %}
+    <table class="data">
+      <thead>
+        <tr><th>Opportunity</th><th>Next action</th><th>Flags</th><th>Score</th></tr>
+      </thead>
+      <tbody>
+        {% for o in actions %}
+        <tr>
+          <td>
+            <div class="title">{{ o.title }}</div>
+            <div class="muted">{{ o.company_name }}</div>
+            {% if o.action_rationale %}<div class="muted">{{ o.action_rationale }}</div>{% endif %}
+          </td>
+          <td>{{ o.next_action or '—' }}</td>
+          <td>{{ opp_flags(o) }}</td>
+          <td>{{ score_cell(o) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Queue empty. Save opportunities from the inbox once scoring/actions land.</p>
+    {% endif %}
+  </div>
+{% endblock %}
