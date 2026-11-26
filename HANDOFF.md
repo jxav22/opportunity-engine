@@ -20,7 +20,7 @@ _Status: coordinate on main._ Schema bootstrap in `opportunity_engine/db.py` (co
 
 ## Agent C — Ranking / profile / skills / signals / actions
 
-**Branch:** `agent-c-ranking`  
+**Branch:** `cursor/agent-c-ranking-f054` (ranking workstream; was `agent-c-ranking`)  
 **Owns:** `opportunity_engine/{scoring,profile,skills,signals,actions}.py`, `tests/test_scoring*`, `tests/test_skills*`
 
 ### Done
